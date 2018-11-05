@@ -104,3 +104,4 @@ python3.6_venv/
 .mypy_cache/
 # others
 models/
+zappa_settings.json
