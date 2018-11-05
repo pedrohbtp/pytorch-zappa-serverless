@@ -102,3 +102,5 @@ python3.6_venv/
 
 # mypy
 .mypy_cache/
+# others
+models/
