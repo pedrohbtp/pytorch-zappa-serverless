@@ -1,5 +1,6 @@
 {
     "dev": {
+        "memory_size": 3008,
         "app_function": "main.app",
         "lambda_description": "Lambda to put fastai in production",
         "profile_name": null,

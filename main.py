@@ -6,7 +6,8 @@ import json
 import pickle
 import os
 import requests
-from fastai.text import get_language_model
+# from fastai.text import get_language_model
+from pytorch_models import awd_lstm
 import numpy as np
 import torch 
 
@@ -77,7 +78,7 @@ def load_lm_and_predict():
     stoi = {i[1]:i[0] for i in enumerate(itos)}
     # Generates AWD_LSTM model
     dps = np.array([0.25, 0.1, 0.2, 0.02, 0.15]) * 1.0
-    my_model = get_language_model(vocab_sz=len(itos), emb_sz=400, n_hid=1150, n_layers=3, pad_token=1, input_p=dps[0],                    output_p=dps[1],weight_p=dps[2], embed_p=dps[3], hidden_p=dps[4], tie_weights=True, bias=True, qrnn=False)
+    my_model = awd_lstm.get_language_model(vocab_sz=len(itos), emb_sz=400, n_hid=1150, n_layers=3, pad_token=1, input_p=dps[0],                    output_p=dps[1],weight_p=dps[2], embed_p=dps[3], hidden_p=dps[4], tie_weights=True, bias=True, qrnn=False)
     # load all the weights in the model
     my_model.load_state_dict(torch.load(MODEL_PATH, map_location='cpu'))
     my_model.itos = itos
@@ -96,6 +97,15 @@ def inference():
     resp = Response(response=json.dumps({"response": response}), status=200, mimetype='application/json')
     return resp
 
+
+# @app.route('/inference',methods=['GET'])
+# def inference():
+#     ''' 
+#     GET: Performs inference on the language model
+#     '''
+#     a = torch.tensor([1])
+#     resp = Response(response=json.dumps({"response": 'success'}), status=200, mimetype='application/json')
+#     return resp
 
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=8082)
