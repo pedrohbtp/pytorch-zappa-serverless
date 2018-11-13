@@ -111,7 +111,8 @@ def inference():
     '''
     #form_data = flask.request.get_json()
     #data = form_data['data']
-    response = unpickle_predict()
+    # response = unpickle_predict()
+    response = load_lm_and_predict()
     resp = Response(response=json.dumps({"response": response}), status=200, mimetype='application/json')
     return resp
 
