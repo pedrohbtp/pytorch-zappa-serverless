@@ -7,6 +7,10 @@
         "project_name": "flask-ai",
         "runtime": "python3.6",
         "s3_bucket": "",
-        "slim_handler": "true"
+        "slim_handler": "true",
+        "exclude": ["models"],
+        "aws_environment_variables": {
+            "models_bucket": ""
+        }
     }
 }

@@ -10,11 +10,14 @@ import requests
 from pytorch_models import awd_lstm
 import numpy as np
 import torch 
+import boto3
 
 app = Flask(__name__)
+CORS(app)
 
-MODEL_PATH= './models/awd_lstm/lstm_wt103.pth'
-ITOS_PATH = './models/awd_lstm/itos_wt103.pkl'
+MODEL_PATH= 'models/awd_lstm/lstm_wt103.pth'
+MODEL_PATH_PICKLE= 'models/awd_lstm/lstm_wt103.pkl'
+ITOS_PATH = 'models/awd_lstm/itos_wt103.pkl'
 
 def pickle_obj(data, path):
     with open(path,'wb+') as f:
@@ -24,7 +27,18 @@ def unpickle_obj(path):
     with open(path,'rb') as f:
         data = pickle.load(f)
     return data
- 
+
+def unpickle_s3_obj(bucket, path):
+    if IS_LOCAL == False:
+        s3 = boto3.resource('s3')
+        obj = s3.Object(bucket, path)
+        body_string = obj.get()['Body'].read()
+        data = pickle.loads(body_string)
+    else:
+        print('is local: ', IS_LOCAL)
+        data = unpickle_obj(path)
+    return data
+    
 def sample_model(model, input_words, l=50):
     '''
     model: pytorch LM 
@@ -67,7 +81,11 @@ def sample_model(model, input_words, l=50):
         last_word = word
     model[0].bs=bs
     return final_string
-    
+
+def unpickle_predict():
+    model = unpickle_s3_obj(os.environ["models_bucket"], MODEL_PATH_PICKLE)
+    return {'text': sample_model(model, [''], l=50)}
+
 def load_lm_and_predict():
     ''' input_data: data to be used in the prediction
     model_path: path to the 
@@ -93,20 +111,19 @@ def inference():
     '''
     #form_data = flask.request.get_json()
     #data = form_data['data']
-    response = load_lm_and_predict()
+    response = unpickle_predict()
     resp = Response(response=json.dumps({"response": response}), status=200, mimetype='application/json')
     return resp
 
 
-# @app.route('/inference',methods=['GET'])
-# def inference():
-#     ''' 
-#     GET: Performs inference on the language model
-#     '''
-#     a = torch.tensor([1])
-#     resp = Response(response=json.dumps({"response": 'success'}), status=200, mimetype='application/json')
-#     return resp
-
+IS_LOCAL = False
 if __name__ == '__main__':
+    IS_LOCAL = True
+    env = 'dev'
+    # Test if the values were set to know if it is running locally or on lambda
+    json_data = open('zappa_settings.json')
+    env_vars = json.load(json_data)
+    for key, val in env_vars[env]['aws_environment_variables'].items():
+        os.environ[key] = val
+    print('Set the environ')
     app.run(debug=True, host='0.0.0.0', port=8082)
-    # print(load_lm_and_predict())
