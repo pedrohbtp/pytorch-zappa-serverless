@@ -14,7 +14,7 @@ future==0.16.0
 hjson==3.0.1
 idna==2.7
 itsdangerous==1.1.0
-Jinja2==2.10
+Jinja2==2.11.3
 jmespath==0.9.3
 kappa==0.6.0
 lambda-packages==0.20.0
